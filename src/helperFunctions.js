@@ -481,7 +481,9 @@ class helpers {
    * @private
    */
   _buildFullDAVPath (path) {
-    return this._encodeUri(path)
+    path = this._encodeUri(path)
+    const user = window.Vue.$store.state.user.id
+    return path.replace(/^\/files\/undefined/, `/files/${user}`)
   }
 
   /**
