@@ -243,7 +243,7 @@ export class Dav {
 
           resolve({
             body: res?.data,
-            status: res?.status,
+            status: error.name === 'CanceledError' ? 0 : res?.status,
             res
           })
         })

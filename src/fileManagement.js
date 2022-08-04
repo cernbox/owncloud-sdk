@@ -1,4 +1,5 @@
 const Promise = require('promise')
+const CanceledError = require('./canceledError')
 const { Dav } = require('./dav')
 
 /**
@@ -39,8 +40,9 @@ class Files {
    * @param   {array}     properties    Array[string] with dav properties to be requested
    * @returns {Promise.<fileInfo>}      Array[objects]: each object is an instance of class fileInfo
    * @returns {Promise.<error>}         string: error message, if any.
+   * @param   {Object}    options
    */
-  list (path, depth = '1', properties = []) {
+  list (path, depth = '1', properties = [], options = {}) {
     if (!this.helpers.getAuthorization()) {
       return Promise.reject('Please specify an authorization first.')
     }
@@ -50,7 +52,10 @@ class Files {
     }
 
     const headers = this.helpers.buildHeaders()
-    return this.davClient.propFind(this.helpers._buildFullDAVPath(path), properties, depth, headers).then(result => {
+    return this.davClient.propFind(this.helpers._buildFullDAVPath(path), properties, depth, headers, options).then(result => {
+      if (result.status === 0) {
+        return Promise.reject(new CanceledError())
+      }
       if (result.status !== 207) {
         return Promise.reject(this.helpers.buildHttpErrorFromDavResponse(result.status, result.body))
       } else {
